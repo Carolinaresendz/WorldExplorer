@@ -14,41 +14,57 @@ struct InteractiveWorldMapView: View {
             span: MKCoordinateSpan(latitudeDelta: 130, longitudeDelta: 260)
         )
     )
+    
     @State private var selectedContinent: String?
     @State private var selectionFeedbackTrigger = 0
 
     private let mapRegions = ContinentMapRepository.loadRegions()
 
     var body: some View {
-        MapReader { proxy in
-            Map(position: $cameraPosition) {
-                ForEach(mapRegions) { region in
-                    MapPolygon(region.polygon)
-                        .foregroundStyle(
-                            selectedContinent == region.name
+        
+        ZStack {
+            
+            /*Color(red: 0.1, green: 0.3, blue: 0.5)
+                .ignoresSafeArea()*/
+            Color.black
+                    .ignoresSafeArea()
+            
+            MapReader { proxy in
+                Map(position: $cameraPosition) {
+                    ForEach(mapRegions) { region in
+                        MapPolygon(region.polygon)
+                            .foregroundStyle(
+                                selectedContinent == region.name
                                 ? Color.accentColor.opacity(0.28)
                                 ///: Color.clear
-                            : Color(red:0.22, green: 0.45, blue: 0.28).opacity(0.85)
-                        )
-                        .stroke(
-                            selectedContinent == region.name
+                                : Color(red:0.22, green: 0.45, blue: 0.28).opacity(0.85)
+                            )
+                            .stroke(
+                                selectedContinent == region.name
                                 ? Color.accentColor
                                 : Color.primary.opacity(0.35),
-                            lineWidth: selectedContinent == region.name ? 2 : 0.75
-                        )
+                                lineWidth: selectedContinent == region.name ? 2 : 0.75
+                            )
+                    }
                 }
-            }
-            .mapStyle(.hybrid(elevation: .realistic))
-            .mapControls {
-                MapCompass()
-                MapScaleView()
-            }
-            .onTapGesture { position in
-                guard let coordinate = proxy.convert(position, from: .local) else {
-                    return
+                .mapStyle(.hybrid(elevation: .realistic))
+                .overlay(
+                    Color(red: 0.1, green: 0.3, blue: 0.5)
+                        .opacity(0.45) // Ajusta la intensidad del azul
+                        .blendMode(.multiply) // Mezcla el color con el mapa de fondo
+                        .allowsHitTesting(false) // Permite que los gestos sigan pasando al mapa
+                )
+                .mapControls {
+                    MapCompass()
+                    MapScaleView()
                 }
-
-                selectContinent(at: coordinate)
+                .onTapGesture { position in
+                    guard let coordinate = proxy.convert(position, from: .local) else {
+                        return
+                    }
+                    
+                    selectContinent(at: coordinate)
+                }
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
