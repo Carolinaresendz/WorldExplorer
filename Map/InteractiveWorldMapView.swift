@@ -27,7 +27,8 @@ struct InteractiveWorldMapView: View {
                         .foregroundStyle(
                             selectedContinent == region.name
                                 ? Color.accentColor.opacity(0.28)
-                                : Color.clear
+                                ///: Color.clear
+                            : Color(red:0.22, green: 0.45, blue: 0.28).opacity(0.85)
                         )
                         .stroke(
                             selectedContinent == region.name
