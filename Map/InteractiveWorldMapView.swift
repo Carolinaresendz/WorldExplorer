@@ -8,64 +8,27 @@ struct ContinentPolygon: Identifiable {
 }
 
 struct InteractiveWorldMapView: View {
-    @State private var cameraPosition: MapCameraPosition = .region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 50, longitude: 0),
-            span: MKCoordinateSpan(latitudeDelta: 130, longitudeDelta: 260)
-        )
-    )
-    
     @State private var selectedContinent: String?
     @State private var selectionFeedbackTrigger = 0
 
     private let mapRegions = ContinentMapRepository.loadRegions()
 
     var body: some View {
-        
         ZStack {
-            
-            /*Color(red: 0.1, green: 0.3, blue: 0.5)
-                .ignoresSafeArea()*/
             Color.black
-                    .ignoresSafeArea()
-            
-            MapReader { proxy in
-                Map(position: $cameraPosition) {
-                    ForEach(mapRegions) { region in
-                        MapPolygon(region.polygon)
-                            .foregroundStyle(
-                                selectedContinent == region.name
-                                ? Color.accentColor.opacity(0.28)
-                                ///: Color.clear
-                                : Color(red:0.22, green: 0.45, blue: 0.28).opacity(0.85)
-                            )
-                            .stroke(
-                                selectedContinent == region.name
-                                ? Color.accentColor
-                                : Color.primary.opacity(0.35),
-                                lineWidth: selectedContinent == region.name ? 2 : 0.75
-                            )
+                .ignoresSafeArea()
+
+            Globe3DView(
+                regions: mapRegions,
+                selectedContinent: $selectedContinent,
+                onContinentTapped: { continent in
+                    withAnimation(.snappy) {
+                        selectedContinent = selectedContinent == continent ? nil : continent
                     }
+                    selectionFeedbackTrigger += 1
                 }
-                .mapStyle(.hybrid(elevation: .realistic))
-                .overlay(
-                    Color(red: 0.1, green: 0.3, blue: 0.5)
-                        .opacity(0.45) // Ajusta la intensidad del azul
-                        .blendMode(.multiply) // Mezcla el color con el mapa de fondo
-                        .allowsHitTesting(false) // Permite que los gestos sigan pasando al mapa
-                )
-                .mapControls {
-                    MapCompass()
-                    MapScaleView()
-                }
-                .onTapGesture { position in
-                    guard let coordinate = proxy.convert(position, from: .local) else {
-                        return
-                    }
-                    
-                    selectContinent(at: coordinate)
-                }
-            }
+            )
+            .ignoresSafeArea()
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if let selectedContinent {
@@ -75,17 +38,6 @@ struct InteractiveWorldMapView: View {
             }
         }
         .sensoryFeedback(.selection, trigger: selectionFeedbackTrigger)
-    }
-
-    private func selectContinent(at coordinate: CLLocationCoordinate2D) {
-        guard let region = mapRegions.first(where: { $0.polygon.contains(coordinate) }) else {
-            return
-        }
-
-        withAnimation(.snappy) {
-            selectedContinent = selectedContinent == region.name ? nil : region.name
-        }
-        selectionFeedbackTrigger += 1
     }
 
     private func continentPanel(for continent: String) -> some View {
@@ -188,7 +140,7 @@ private enum ContinentMapRepository {
     }
 }
 
-private extension MKPolygon {
+extension MKPolygon {
     func contains(_ coordinate: CLLocationCoordinate2D) -> Bool {
         guard pointCount > 2 else {
             return false
