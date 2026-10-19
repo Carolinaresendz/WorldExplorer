@@ -24,21 +24,25 @@ struct Globe3DView: UIViewRepresentable {
         let scene = SCNScene()
         scnView.scene = scene
 
-        // Camera
+        // Cámara de teleobjetivo espacial:
+        // Configurada para que la esfera completa quepa perfectamente visible y centrada
+        // en la pantalla del iPhone de forma 100% circular sin deformarse ni salirse por los laterales.
         let cameraNode = SCNNode()
         let camera = SCNCamera()
+        camera.fieldOfView = 22
         camera.zNear = 0.1
         camera.zFar = 100.0
         cameraNode.camera = camera
-        cameraNode.position = SCNVector3(0, 0, 2.7)
+        cameraNode.position = SCNVector3(0, 0, 13.0)
         scene.rootNode.addChildNode(cameraNode)
+        scnView.pointOfView = cameraNode
         context.coordinator.cameraNode = cameraNode
 
-        // Lighting
+        // Iluminación balanceada para resaltar los continentes y océanos
         let ambientLightNode = SCNNode()
         let ambientLight = SCNLight()
         ambientLight.type = .ambient
-        ambientLight.intensity = 850
+        ambientLight.intensity = 450
         ambientLight.color = UIColor(white: 0.9, alpha: 1.0)
         ambientLightNode.light = ambientLight
         scene.rootNode.addChildNode(ambientLightNode)
@@ -46,14 +50,14 @@ struct Globe3DView: UIViewRepresentable {
         let dirLightNode = SCNNode()
         let dirLight = SCNLight()
         dirLight.type = .directional
-        dirLight.intensity = 1100
+        dirLight.intensity = 600
         dirLight.color = UIColor(white: 1.0, alpha: 1.0)
         dirLightNode.light = dirLight
-        dirLightNode.position = SCNVector3(3, 2, 4)
+        dirLightNode.position = SCNVector3(2, 3, 5)
         dirLightNode.look(at: SCNVector3(0, 0, 0))
         scene.rootNode.addChildNode(dirLightNode)
 
-        // Earth Base Sphere
+        // Earth Base Sphere (esfera perfecta con radio 1.0)
         let earthSphere = SCNSphere(radius: 1.0)
         earthSphere.segmentCount = 96
         let earthMaterial = SCNMaterial()
@@ -66,10 +70,9 @@ struct Globe3DView: UIViewRepresentable {
         earthSphere.materials = [earthMaterial]
 
         let earthNode = SCNNode(geometry: earthSphere)
-        // Initial orientation: Center Americas/Europe nicely
+        // Orientación inicial neutral (ecuador centrado frente a la cámara)
         let initialRotY = simd_quatf(angle: -Float.pi / 2, axis: simd_float3(0, 1, 0))
-        let initialRotX = simd_quatf(angle: 0.2, axis: simd_float3(1, 0, 0))
-        earthNode.simdOrientation = initialRotX * initialRotY
+        earthNode.simdOrientation = initialRotY
         scene.rootNode.addChildNode(earthNode)
         context.coordinator.earthNode = earthNode
 
@@ -136,6 +139,8 @@ struct Globe3DView: UIViewRepresentable {
         private var textureCache: [String: UIImage] = [:]
         private var displayLink: CADisplayLink?
         private var angularVelocity = CGPoint.zero
+        private var currentPitch: Float = 0.0 // Centrado en el ecuador
+        private let maxPitch: Float = 0.45 // Inclinación sutil
 
         init(_ parent: Globe3DView) {
             self.parent = parent
@@ -157,12 +162,18 @@ struct Globe3DView: UIViewRepresentable {
             }
 
             let translation = gesture.translation(in: gesture.view)
-            let sensitivity: Float = 0.005
+            let horizontalSensitivity: Float = 0.005
+            let verticalSensitivity: Float = 0.0015 // Giro vertical sutil pero perceptible
 
-            let deltaX = Float(translation.x) * sensitivity
-            let deltaY = Float(translation.y) * sensitivity
+            let deltaX = Float(translation.x) * horizontalSensitivity
+            let rawDeltaY = Float(translation.y) * verticalSensitivity
 
-            // Rotate smoothly around world axes
+            // Clampear la inclinación vertical
+            let targetPitch = max(-maxPitch, min(maxPitch, currentPitch + rawDeltaY))
+            let deltaY = targetPitch - currentPitch
+            currentPitch = targetPitch
+
+            // Rotación: giro completo horizontal y leve vertical
             let rotY = simd_quatf(angle: deltaX, axis: simd_float3(0, 1, 0))
             let rotX = simd_quatf(angle: deltaY, axis: simd_float3(1, 0, 0))
             earthNode.simdOrientation = rotY * rotX * earthNode.simdOrientation
@@ -176,8 +187,7 @@ struct Globe3DView: UIViewRepresentable {
         }
 
         private func startInertia(velocityX: Float, velocityY: Float) {
-            // Scale velocity to manageable angular delta per frame
-            angularVelocity = CGPoint(x: CGFloat(velocityX * 0.00008), y: CGFloat(velocityY * 0.00008))
+            angularVelocity = CGPoint(x: CGFloat(velocityX * 0.00008), y: CGFloat(velocityY * 0.00001))
 
             if displayLink == nil {
                 let dl = CADisplayLink(target: self, selector: #selector(updateInertia))
@@ -198,13 +208,18 @@ struct Globe3DView: UIViewRepresentable {
                 return
             }
 
+            let deltaPitch = Float(angularVelocity.y)
+            let targetPitch = max(-maxPitch, min(maxPitch, currentPitch + deltaPitch))
+            let actualDeltaY = targetPitch - currentPitch
+            currentPitch = targetPitch
+
             let rotY = simd_quatf(angle: Float(angularVelocity.x), axis: simd_float3(0, 1, 0))
-            let rotX = simd_quatf(angle: Float(angularVelocity.y), axis: simd_float3(1, 0, 0))
+            let rotX = simd_quatf(angle: actualDeltaY, axis: simd_float3(1, 0, 0))
             earthNode.simdOrientation = rotY * rotX * earthNode.simdOrientation
 
-            // Smooth decay
+            // Desaceleración suave
             angularVelocity.x *= 0.94
-            angularVelocity.y *= 0.94
+            angularVelocity.y *= 0.90
 
             if abs(angularVelocity.x) < 0.0001 && abs(angularVelocity.y) < 0.0001 {
                 stopInertia()
@@ -215,7 +230,7 @@ struct Globe3DView: UIViewRepresentable {
             guard let cameraNode else { return }
             let scale = Float(gesture.scale)
             let targetZ = cameraNode.position.z / scale
-            cameraNode.position.z = max(1.7, min(4.2, targetZ))
+            cameraNode.position.z = max(8.0, min(20.0, targetZ))
             gesture.scale = 1.0
         }
 
