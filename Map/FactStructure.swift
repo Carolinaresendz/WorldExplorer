@@ -1,8 +1,7 @@
-//
-//  FactStructure.swift
-//  Map
-//
-//  Created by Carolina De los Santos Resendiz on 19/10/2026.
-//
-
-import Foundation
+struct Fact: Identifiable {
+    let id: String
+    let location: String
+    let title: String
+    let description: String
+    let imageName: String
+}
