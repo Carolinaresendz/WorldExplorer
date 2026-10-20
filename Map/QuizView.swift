@@ -1,75 +1,76 @@
 import SwiftUI
 
 struct QuizView: View {
-    let continent: String
+    private let region: WorldRegion
     private let questions: [QuizQuestion]
 
-    @State private var currentIndex = 0
+    @State private var currentQuestionIndex = 0
     @State private var lives = 3
     @State private var quizScore = 0
     @State private var selectedAnswer: String?
-    @State private var answerOrder: [String]
+    @State private var shuffledAnswers: [String]
     @State private var isFinished = false
     @State private var correctFeedbackTrigger = 0
     @State private var incorrectFeedbackTrigger = 0
-    @State private var animationTrigger = 0
+    @State private var feedbackAnimationTrigger = 0
+
     @AppStorage("totalQuizScore") private var totalScore = 0
 
-    init(continent: String) {
-        let questions = QuizQuestionBank.questions(for: continent)
+    init(region: WorldRegion) {
+        let questions = QuizQuestionBank.questions(for: region)
 
-        self.continent = continent
+        self.region = region
         self.questions = questions
-        _answerOrder = State(initialValue: questions.first?.answers.shuffled() ?? [])
+        _shuffledAnswers = State(
+            initialValue: questions.first?.answers.shuffled() ?? []
+        )
+    }
+
+    init(continent: String) {
+        self.init(region: WorldRegion(continent: continent) ?? .asia)
     }
 
     var body: some View {
         Group {
             if questions.isEmpty {
-                emptyView
+                emptyState
             } else if isFinished || lives == 0 {
-                QuizResultView(
-                    ranOutOfLives: lives == 0,
-                    quizScore: quizScore,
-                    questionCount: questions.count,
-                    totalScore: totalScore,
-                    restart: restart
-                )
+                results
             } else {
-                quizView
+                activeQuiz
             }
         }
-        .navigationTitle("\(continentDisplayName) Quiz")
+        .navigationTitle("\(region.displayName) Quiz")
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Color(.systemGroupedBackground))
         .sensoryFeedback(.success, trigger: correctFeedbackTrigger)
         .sensoryFeedback(.error, trigger: incorrectFeedbackTrigger)
     }
 
-    private var quizView: some View {
-        let question = questions[currentIndex]
+    private var activeQuiz: some View {
+        let question = questions[currentQuestionIndex]
 
         return ScrollView {
             VStack(spacing: 20) {
                 QuizStatusView(
                     lives: lives,
                     totalScore: totalScore,
-                    questionNumber: currentIndex + 1,
+                    questionNumber: currentQuestionIndex + 1,
                     questionCount: questions.count
                 )
 
                 QuizQuestionCard(
                     question: question,
-                    answers: answerOrder,
+                    answers: shuffledAnswers,
                     selectedAnswer: selectedAnswer,
-                    chooseAnswer: choose
+                    chooseAnswer: selectAnswer
                 )
 
                 if let selectedAnswer {
                     QuizFeedbackView(
                         isCorrect: selectedAnswer == question.correctAnswer,
                         correctAnswer: question.correctAnswer,
-                        animationTrigger: animationTrigger
+                        animationTrigger: feedbackAnimationTrigger
                     )
 
                     Button(nextButtonTitle, action: advance)
@@ -81,34 +82,42 @@ struct QuizView: View {
         }
     }
 
-    private var emptyView: some View {
+    private var results: some View {
+        QuizResultView(
+            ranOutOfLives: lives == 0,
+            quizScore: quizScore,
+            questionCount: questions.count,
+            totalScore: totalScore,
+            restart: restart
+        )
+    }
+
+    private var emptyState: some View {
         ContentUnavailableView(
             "No Quiz Available",
             systemImage: "questionmark.circle",
-            description: Text("Questions for \(continentDisplayName) have not been added yet.")
+            description: Text(
+                "Questions for \(region.displayName) have not been added yet."
+            )
         )
     }
 
     private var nextButtonTitle: String {
-        currentIndex + 1 == questions.count ? "See Results" : "Next Question"
+        currentQuestionIndex + 1 == questions.count
+            ? "See Results"
+            : "Next Question"
     }
 
-    private var continentDisplayName: String {
-        switch continent {
-        case "NorthAmerica": "North America"
-        case "SouthAmerica": "South America"
-        default: continent
+    private func selectAnswer(_ answer: String) {
+        guard selectedAnswer == nil else {
+            return
         }
-    }
 
-    private func choose(_ answer: String) {
-        guard selectedAnswer == nil else { return }
-
-        let isCorrect = answer == questions[currentIndex].correctAnswer
+        let isCorrect = answer == questions[currentQuestionIndex].correctAnswer
 
         withAnimation(.spring(duration: 0.3, bounce: 0.25)) {
             selectedAnswer = answer
-            animationTrigger += 1
+            feedbackAnimationTrigger += 1
 
             if isCorrect {
                 quizScore += 1
@@ -122,29 +131,34 @@ struct QuizView: View {
     }
 
     private func advance() {
-        guard selectedAnswer != nil else { return }
-
-        if currentIndex + 1 < questions.count, lives > 0 {
-            currentIndex += 1
-            selectedAnswer = nil
-            answerOrder = questions[currentIndex].answers.shuffled()
-        } else {
-            isFinished = true
+        guard selectedAnswer != nil else {
+            return
         }
+
+        let hasAnotherQuestion = currentQuestionIndex + 1 < questions.count
+
+        guard hasAnotherQuestion, lives > 0 else {
+            isFinished = true
+            return
+        }
+
+        currentQuestionIndex += 1
+        selectedAnswer = nil
+        shuffledAnswers = questions[currentQuestionIndex].answers.shuffled()
     }
 
     private func restart() {
-        currentIndex = 0
+        currentQuestionIndex = 0
         lives = 3
         quizScore = 0
         selectedAnswer = nil
-        answerOrder = questions.first?.answers.shuffled() ?? []
+        shuffledAnswers = questions.first?.answers.shuffled() ?? []
         isFinished = false
     }
 }
 
 #Preview {
     NavigationStack {
-        QuizView(continent: "Asia")
+        QuizView(region: .asia)
     }
 }

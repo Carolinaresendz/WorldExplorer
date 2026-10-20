@@ -1,0 +1,120 @@
+import SwiftUI
+
+struct QuizQuestionCard: View {
+    let question: QuizQuestion
+    let answers: [String]
+    let selectedAnswer: String?
+    let chooseAnswer: (String) -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Label(question.location, systemImage: "mappin.and.ellipse")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Image(systemName: question.systemImage)
+                .font(.system(.largeTitle, design: .rounded, weight: .medium))
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
+
+            Text(question.prompt)
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+
+            VStack(spacing: 12) {
+                ForEach(answers, id: \.self) { answer in
+                    QuizAnswerButton(
+                        answer: answer,
+                        correctAnswer: question.correctAnswer,
+                        selectedAnswer: selectedAnswer
+                    ) {
+                        chooseAnswer(answer)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+private struct QuizAnswerButton: View {
+    let answer: String
+    let correctAnswer: String
+    let selectedAnswer: String?
+    let action: () -> Void
+
+    private var isCorrect: Bool {
+        answer == correctAnswer
+    }
+
+    private var isSelected: Bool {
+        answer == selectedAnswer
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(answer)
+                    .multilineTextAlignment(.leading)
+
+                Spacer()
+
+                answerIndicator
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.bordered)
+        .tint(tint)
+        .disabled(selectedAnswer != nil)
+        .accessibilityLabel(answer)
+        .accessibilityValue(accessibilityValue)
+    }
+
+    @ViewBuilder
+    private var answerIndicator: some View {
+        if selectedAnswer != nil, isCorrect {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+                .accessibilityHidden(true)
+        } else if isSelected {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundStyle(.red)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var tint: Color {
+        guard selectedAnswer != nil else {
+            return .accentColor
+        }
+
+        if isCorrect {
+            return .green
+        }
+
+        if isSelected {
+            return .red
+        }
+
+        return .secondary
+    }
+
+    private var accessibilityValue: String {
+        guard selectedAnswer != nil else {
+            return ""
+        }
+
+        if isCorrect {
+            return "Correct answer"
+        }
+
+        if isSelected {
+            return "Selected, incorrect"
+        }
+
+        return "Not selected"
+    }
+}

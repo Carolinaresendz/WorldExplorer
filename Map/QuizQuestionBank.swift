@@ -1,38 +1,205 @@
 enum QuizQuestionBank {
-    static func questions(for continent: String) -> [QuizQuestion] {
-        allQuestions[continent] ?? []
+    static func questions(for region: WorldRegion) -> [QuizQuestion] {
+        switch region {
+        case .africa:
+            africaQuestions
+        case .asia:
+            asiaQuestions
+        case .europe:
+            europeQuestions
+        case .northAmerica:
+            northAmericaQuestions
+        case .oceania:
+            oceaniaQuestions
+        case .southAmerica:
+            southAmericaQuestions
+        }
     }
 
-    private static let allQuestions: [String: [QuizQuestion]] = [
-        "Africa": [
-            QuizQuestion(id: "africa-city", location: "Morocco", prompt: "In which city is Jemaa el-Fna Square?", answers: ["Marrakesh", "Cairo", "Dakar", "Tunis"], correctAnswer: "Marrakesh", systemImage: "building.columns.fill"),
-            QuizQuestion(id: "africa-square", location: "Marrakesh, Morocco", prompt: "What is Jemaa el-Fna especially known for?", answers: ["Storytellers and performers", "Ice sculpture", "Opera houses", "Tea plantations"], correctAnswer: "Storytellers and performers", systemImage: "theatermasks.fill"),
-            QuizQuestion(id: "africa-heritage", location: "Marrakesh, Morocco", prompt: "Jemaa el-Fna is recognized as what kind of heritage?", answers: ["Living cultural heritage", "Marine heritage", "Industrial heritage", "Space heritage"], correctAnswer: "Living cultural heritage", systemImage: "person.3.fill")
-        ],
-        "Asia": [
-            QuizQuestion(id: "asia-hanbok", location: "South Korea", prompt: "What is traditional Korean clothing called?", answers: ["Hanbok", "Kimono", "Cheongsam", "Sari"], correctAnswer: "Hanbok", systemImage: "tshirt.fill"),
-            QuizQuestion(id: "asia-holi", location: "India", prompt: "Which festival is famous for brightly colored powders?", answers: ["Holi", "Diwali", "Vesak", "Obon"], correctAnswer: "Holi", systemImage: "paintpalette.fill"),
-            QuizQuestion(id: "asia-silence", location: "Japan", prompt: "In many Japanese social situations, silence can communicate what?", answers: ["Thoughtfulness", "Disinterest only", "A greeting", "A celebration"], correctAnswer: "Thoughtfulness", systemImage: "ellipsis.message.fill")
-        ],
-        "Europe": [
-            QuizQuestion(id: "europe-sauna", location: "Finland", prompt: "In Finland, a sauna can also be what kind of place?", answers: ["A social space", "A courtroom", "A market", "A library"], correctAnswer: "A social space", systemImage: "water.waves"),
-            QuizQuestion(id: "europe-sauna-purpose", location: "Finland", prompt: "Finnish sauna culture is associated with relaxation and what else?", answers: ["Spending time together", "Competitive racing", "Street trading", "Mountain climbing"], correctAnswer: "Spending time together", systemImage: "person.2.fill"),
-            QuizQuestion(id: "europe-sauna-common", location: "Finland", prompt: "How are saunas generally regarded in Finnish everyday life?", answers: ["Familiar and ordinary", "Forbidden", "Only ceremonial", "Only for tourists"], correctAnswer: "Familiar and ordinary", systemImage: "house.fill")
-        ],
-        "NorthAmerica": [
-            QuizQuestion(id: "north-flower", location: "Michoacán, Mexico", prompt: "Which flower is strongly associated with Día de Muertos?", answers: ["Cempasúchil", "Tulip", "Lotus", "Lavender"], correctAnswer: "Cempasúchil", systemImage: "camera.macro"),
-            QuizQuestion(id: "north-color", location: "Michoacán, Mexico", prompt: "What color are cempasúchil flowers usually known for?", answers: ["Bright orange", "Deep blue", "Pure black", "Silver"], correctAnswer: "Bright orange", systemImage: "sun.max.fill"),
-            QuizQuestion(id: "north-path", location: "Michoacán, Mexico", prompt: "Why are paths of marigolds sometimes created?", answers: ["To symbolically guide loved ones", "To mark a race", "To measure rainfall", "To dry the flowers"], correctAnswer: "To symbolically guide loved ones", systemImage: "point.topleft.down.to.point.bottomright.curvepath")
-        ],
-        "Oceania": [
-            QuizQuestion(id: "oceania-material", location: "Vanuatu", prompt: "Where are traditional Vanuatu drawings traced?", answers: ["Sand, ash or clay", "Glass", "Silk", "Metal"], correctAnswer: "Sand, ash or clay", systemImage: "scribble.variable"),
-            QuizQuestion(id: "oceania-method", location: "Vanuatu", prompt: "How is the continuous line traditionally drawn?", answers: ["With one finger", "With a compass", "With a brush", "With a chisel"], correctAnswer: "With one finger", systemImage: "hand.draw.fill"),
-            QuizQuestion(id: "oceania-purpose", location: "Central and northern Vanuatu", prompt: "What can sand drawings help transmit?", answers: ["Stories and knowledge", "Only decoration", "Weather forecasts only", "Currency values"], correctAnswer: "Stories and knowledge", systemImage: "book.pages.fill")
-        ],
-        "SouthAmerica": [
-            QuizQuestion(id: "south-country", location: "Cusco Region, Peru", prompt: "The Qoyllurit’i pilgrimage takes place in which country?", answers: ["Peru", "Chile", "Brazil", "Argentina"], correctAnswer: "Peru", systemImage: "mountain.2.fill"),
-            QuizQuestion(id: "south-valley", location: "Cusco Region, Peru", prompt: "Where is the Qoyllurit’i sanctuary located?", answers: ["Sinakara Valley", "Sacred Valley", "Colca Canyon", "Atacama Desert"], correctAnswer: "Sinakara Valley", systemImage: "map.fill"),
-            QuizQuestion(id: "south-expression", location: "Sinakara Valley, Peru", prompt: "Which expression plays a central role in the pilgrimage?", answers: ["Dance", "Sculpture", "Cinema", "Calligraphy"], correctAnswer: "Dance", systemImage: "figure.dance")
-        ]
+    private static let africaQuestions = [
+        QuizQuestion(
+            id: "africa-city",
+            location: "Morocco",
+            prompt: "In which city is Jemaa el-Fna Square?",
+            answers: ["Marrakesh", "Cairo", "Dakar", "Tunis"],
+            correctAnswer: "Marrakesh",
+            systemImage: "building.columns.fill"
+        ),
+        QuizQuestion(
+            id: "africa-square",
+            location: "Marrakesh, Morocco",
+            prompt: "What is Jemaa el-Fna especially known for?",
+            answers: [
+                "Storytellers and performers",
+                "Ice sculpture",
+                "Opera houses",
+                "Tea plantations"
+            ],
+            correctAnswer: "Storytellers and performers",
+            systemImage: "theatermasks.fill"
+        ),
+        QuizQuestion(
+            id: "africa-heritage",
+            location: "Marrakesh, Morocco",
+            prompt: "Jemaa el-Fna is recognized as what kind of heritage?",
+            answers: [
+                "Living cultural heritage",
+                "Marine heritage",
+                "Industrial heritage",
+                "Space heritage"
+            ],
+            correctAnswer: "Living cultural heritage",
+            systemImage: "person.3.fill"
+        )
+    ]
+
+    private static let asiaQuestions = [
+        QuizQuestion(
+            id: "asia-hanbok",
+            location: "South Korea",
+            prompt: "What is traditional Korean clothing called?",
+            answers: ["Hanbok", "Kimono", "Cheongsam", "Sari"],
+            correctAnswer: "Hanbok",
+            systemImage: "tshirt.fill"
+        ),
+        QuizQuestion(
+            id: "asia-holi",
+            location: "India",
+            prompt: "Which festival is famous for brightly colored powders?",
+            answers: ["Holi", "Diwali", "Vesak", "Obon"],
+            correctAnswer: "Holi",
+            systemImage: "paintpalette.fill"
+        ),
+        QuizQuestion(
+            id: "asia-silence",
+            location: "Japan",
+            prompt: "In many Japanese social situations, silence can communicate what?",
+            answers: ["Thoughtfulness", "Disinterest only", "A greeting", "A celebration"],
+            correctAnswer: "Thoughtfulness",
+            systemImage: "ellipsis.message.fill"
+        )
+    ]
+
+    private static let europeQuestions = [
+        QuizQuestion(
+            id: "europe-sauna",
+            location: "Finland",
+            prompt: "In Finland, a sauna can also be what kind of place?",
+            answers: ["A social space", "A courtroom", "A market", "A library"],
+            correctAnswer: "A social space",
+            systemImage: "water.waves"
+        ),
+        QuizQuestion(
+            id: "europe-sauna-purpose",
+            location: "Finland",
+            prompt: "Finnish sauna culture is associated with relaxation and what else?",
+            answers: [
+                "Spending time together",
+                "Competitive racing",
+                "Street trading",
+                "Mountain climbing"
+            ],
+            correctAnswer: "Spending time together",
+            systemImage: "person.2.fill"
+        ),
+        QuizQuestion(
+            id: "europe-sauna-common",
+            location: "Finland",
+            prompt: "How are saunas generally regarded in Finnish everyday life?",
+            answers: ["Familiar and ordinary", "Forbidden", "Only ceremonial", "Only for tourists"],
+            correctAnswer: "Familiar and ordinary",
+            systemImage: "house.fill"
+        )
+    ]
+
+    private static let northAmericaQuestions = [
+        QuizQuestion(
+            id: "north-flower",
+            location: "Michoacán, Mexico",
+            prompt: "Which flower is strongly associated with Día de Muertos?",
+            answers: ["Cempasúchil", "Tulip", "Lotus", "Lavender"],
+            correctAnswer: "Cempasúchil",
+            systemImage: "camera.macro"
+        ),
+        QuizQuestion(
+            id: "north-color",
+            location: "Michoacán, Mexico",
+            prompt: "What color are cempasúchil flowers usually known for?",
+            answers: ["Bright orange", "Deep blue", "Pure black", "Silver"],
+            correctAnswer: "Bright orange",
+            systemImage: "sun.max.fill"
+        ),
+        QuizQuestion(
+            id: "north-path",
+            location: "Michoacán, Mexico",
+            prompt: "Why are paths of marigolds sometimes created?",
+            answers: [
+                "To symbolically guide loved ones",
+                "To mark a race",
+                "To measure rainfall",
+                "To dry the flowers"
+            ],
+            correctAnswer: "To symbolically guide loved ones",
+            systemImage: "point.topleft.down.to.point.bottomright.curvepath"
+        )
+    ]
+
+    private static let oceaniaQuestions = [
+        QuizQuestion(
+            id: "oceania-material",
+            location: "Vanuatu",
+            prompt: "Where are traditional Vanuatu drawings traced?",
+            answers: ["Sand, ash or clay", "Glass", "Silk", "Metal"],
+            correctAnswer: "Sand, ash or clay",
+            systemImage: "scribble.variable"
+        ),
+        QuizQuestion(
+            id: "oceania-method",
+            location: "Vanuatu",
+            prompt: "How is the continuous line traditionally drawn?",
+            answers: ["With one finger", "With a compass", "With a brush", "With a chisel"],
+            correctAnswer: "With one finger",
+            systemImage: "hand.draw.fill"
+        ),
+        QuizQuestion(
+            id: "oceania-purpose",
+            location: "Central and northern Vanuatu",
+            prompt: "What can sand drawings help transmit?",
+            answers: [
+                "Stories and knowledge",
+                "Only decoration",
+                "Weather forecasts only",
+                "Currency values"
+            ],
+            correctAnswer: "Stories and knowledge",
+            systemImage: "book.pages.fill"
+        )
+    ]
+
+    private static let southAmericaQuestions = [
+        QuizQuestion(
+            id: "south-country",
+            location: "Cusco Region, Peru",
+            prompt: "The Qoyllurit’i pilgrimage takes place in which country?",
+            answers: ["Peru", "Chile", "Brazil", "Argentina"],
+            correctAnswer: "Peru",
+            systemImage: "mountain.2.fill"
+        ),
+        QuizQuestion(
+            id: "south-valley",
+            location: "Cusco Region, Peru",
+            prompt: "Where is the Qoyllurit’i sanctuary located?",
+            answers: ["Sinakara Valley", "Sacred Valley", "Colca Canyon", "Atacama Desert"],
+            correctAnswer: "Sinakara Valley",
+            systemImage: "map.fill"
+        ),
+        QuizQuestion(
+            id: "south-expression",
+            location: "Sinakara Valley, Peru",
+            prompt: "Which expression plays a central role in the pilgrimage?",
+            answers: ["Dance", "Sculpture", "Cinema", "Calligraphy"],
+            correctAnswer: "Dance",
+            systemImage: "figure.dance"
+        )
     ]
 }
