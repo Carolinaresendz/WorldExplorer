@@ -18,9 +18,9 @@ struct FactDetailSheet: View {
     }
 
     private var factImage: some View {
-        AsyncImage(url: fact.imageURL) { phase in
-            if let image = phase.image {
-                image
+        Group {
+            if let uiImage = UIImage(named: fact.imageName) {
+                Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
             } else {
