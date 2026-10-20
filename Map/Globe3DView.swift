@@ -24,9 +24,7 @@ struct Globe3DView: UIViewRepresentable {
         let scene = SCNScene()
         scnView.scene = scene
 
-        // Cámara de teleobjetivo espacial:
-        // Configurada para que la esfera completa quepa perfectamente visible y centrada
-        // en la pantalla del iPhone de forma 100% circular sin deformarse ni salirse por los laterales.
+        // Telephoto camera setup:
         let cameraNode = SCNNode()
         let camera = SCNCamera()
         camera.fieldOfView = 22
@@ -38,7 +36,7 @@ struct Globe3DView: UIViewRepresentable {
         scnView.pointOfView = cameraNode
         context.coordinator.cameraNode = cameraNode
 
-        // Iluminación balanceada para resaltar los continentes y océanos
+        // Balanced lighting to highlight the continents and oceans
         let ambientLightNode = SCNNode()
         let ambientLight = SCNLight()
         ambientLight.type = .ambient
@@ -57,7 +55,7 @@ struct Globe3DView: UIViewRepresentable {
         dirLightNode.look(at: SCNVector3(0, 0, 0))
         scene.rootNode.addChildNode(dirLightNode)
 
-        // Earth Base Sphere (esfera perfecta con radio 1.0)
+        // Earth Base Sphere
         let earthSphere = SCNSphere(radius: 1.0)
         earthSphere.segmentCount = 96
         let earthMaterial = SCNMaterial()
@@ -70,7 +68,7 @@ struct Globe3DView: UIViewRepresentable {
         earthSphere.materials = [earthMaterial]
 
         let earthNode = SCNNode(geometry: earthSphere)
-        // Orientación inicial neutral (ecuador centrado frente a la cámara)
+        // Neutral initial orientation (equator centered in front of the camera)
         let initialRotY = simd_quatf(angle: -Float.pi / 2, axis: simd_float3(0, 1, 0))
         earthNode.simdOrientation = initialRotY
         scene.rootNode.addChildNode(earthNode)
@@ -168,12 +166,12 @@ struct Globe3DView: UIViewRepresentable {
             let deltaX = Float(translation.x) * horizontalSensitivity
             let rawDeltaY = Float(translation.y) * verticalSensitivity
 
-            // Clampear la inclinación vertical
+            // Clamp the vertical tilt
             let targetPitch = max(-maxPitch, min(maxPitch, currentPitch + rawDeltaY))
             let deltaY = targetPitch - currentPitch
             currentPitch = targetPitch
 
-            // Rotación: giro completo horizontal y leve vertical
+            // Rotation: full horizontal turn and slight vertical movement
             let rotY = simd_quatf(angle: deltaX, axis: simd_float3(0, 1, 0))
             let rotX = simd_quatf(angle: deltaY, axis: simd_float3(1, 0, 0))
             earthNode.simdOrientation = rotY * rotX * earthNode.simdOrientation
