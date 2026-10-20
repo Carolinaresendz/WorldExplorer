@@ -23,7 +23,7 @@ enum QuizQuestionBank {
             prompt: "In which city is Jemaa el-Fna Square?",
             answers: ["Marrakesh", "Cairo", "Dakar", "Tunis"],
             correctAnswer: "Marrakesh",
-            systemImage: "building.columns.fill"
+            imageName: "Djemaa_el_Fna"
         ),
         QuizQuestion(
             id: "africa-square",
@@ -36,7 +36,7 @@ enum QuizQuestionBank {
                 "Tea plantations"
             ],
             correctAnswer: "Storytellers and performers",
-            systemImage: "theatermasks.fill"
+            imageName: "Djemaa_el_Fna"
         ),
         QuizQuestion(
             id: "africa-heritage",
@@ -49,7 +49,7 @@ enum QuizQuestionBank {
                 "Space heritage"
             ],
             correctAnswer: "Living cultural heritage",
-            systemImage: "person.3.fill"
+            imageName: "Djemaa_el_Fna"
         )
     ]
 
@@ -60,7 +60,7 @@ enum QuizQuestionBank {
             prompt: "What is traditional Korean clothing called?",
             answers: ["Hanbok", "Kimono", "Cheongsam", "Sari"],
             correctAnswer: "Hanbok",
-            systemImage: "tshirt.fill"
+            imageName: "Hanbok_(female_and_male)"
         ),
         QuizQuestion(
             id: "asia-holi",
@@ -68,7 +68,7 @@ enum QuizQuestionBank {
             prompt: "Which festival is famous for brightly colored powders?",
             answers: ["Holi", "Diwali", "Vesak", "Obon"],
             correctAnswer: "Holi",
-            systemImage: "paintpalette.fill"
+            imageName: "Hindu-Holi-Festival-Mathura-Uttar-Pradesh-India.jpg"
         ),
         QuizQuestion(
             id: "asia-silence",
@@ -76,7 +76,7 @@ enum QuizQuestionBank {
             prompt: "In many Japanese social situations, silence can communicate what?",
             answers: ["Thoughtfulness", "Disinterest only", "A greeting", "A celebration"],
             correctAnswer: "Thoughtfulness",
-            systemImage: "ellipsis.message.fill"
+            imageName: "images"
         )
     ]
 
@@ -87,7 +87,7 @@ enum QuizQuestionBank {
             prompt: "In Finland, a sauna can also be what kind of place?",
             answers: ["A social space", "A courtroom", "A market", "A library"],
             correctAnswer: "A social space",
-            systemImage: "water.waves"
+            imageName: "images-2"
         ),
         QuizQuestion(
             id: "europe-sauna-purpose",
@@ -100,7 +100,7 @@ enum QuizQuestionBank {
                 "Mountain climbing"
             ],
             correctAnswer: "Spending time together",
-            systemImage: "person.2.fill"
+            imageName: "images-2"
         ),
         QuizQuestion(
             id: "europe-sauna-common",
@@ -108,7 +108,7 @@ enum QuizQuestionBank {
             prompt: "How are saunas generally regarded in Finnish everyday life?",
             answers: ["Familiar and ordinary", "Forbidden", "Only ceremonial", "Only for tourists"],
             correctAnswer: "Familiar and ordinary",
-            systemImage: "house.fill"
+            imageName: "images-2"
         )
     ]
 
@@ -119,7 +119,7 @@ enum QuizQuestionBank {
             prompt: "Which flower is strongly associated with Día de Muertos?",
             answers: ["Cempasúchil", "Tulip", "Lotus", "Lavender"],
             correctAnswer: "Cempasúchil",
-            systemImage: "camera.macro"
+            imageName: "images-3"
         ),
         QuizQuestion(
             id: "north-color",
@@ -127,7 +127,7 @@ enum QuizQuestionBank {
             prompt: "What color are cempasúchil flowers usually known for?",
             answers: ["Bright orange", "Deep blue", "Pure black", "Silver"],
             correctAnswer: "Bright orange",
-            systemImage: "sun.max.fill"
+            imageName: "images-3"
         ),
         QuizQuestion(
             id: "north-path",
@@ -140,7 +140,7 @@ enum QuizQuestionBank {
                 "To dry the flowers"
             ],
             correctAnswer: "To symbolically guide loved ones",
-            systemImage: "point.topleft.down.to.point.bottomright.curvepath"
+            imageName: "images-3"
         )
     ]
 
@@ -151,7 +151,7 @@ enum QuizQuestionBank {
             prompt: "Where are traditional Vanuatu drawings traced?",
             answers: ["Sand, ash or clay", "Glass", "Silk", "Metal"],
             correctAnswer: "Sand, ash or clay",
-            systemImage: "scribble.variable"
+            imageName: "images-4"
         ),
         QuizQuestion(
             id: "oceania-method",
@@ -159,7 +159,7 @@ enum QuizQuestionBank {
             prompt: "How is the continuous line traditionally drawn?",
             answers: ["With one finger", "With a compass", "With a brush", "With a chisel"],
             correctAnswer: "With one finger",
-            systemImage: "hand.draw.fill"
+            imageName: "images-4"
         ),
         QuizQuestion(
             id: "oceania-purpose",
@@ -172,7 +172,7 @@ enum QuizQuestionBank {
                 "Currency values"
             ],
             correctAnswer: "Stories and knowledge",
-            systemImage: "book.pages.fill"
+            imageName: "images-4"
         )
     ]
 
@@ -183,7 +183,7 @@ enum QuizQuestionBank {
             prompt: "The Qoyllurit’i pilgrimage takes place in which country?",
             answers: ["Peru", "Chile", "Brazil", "Argentina"],
             correctAnswer: "Peru",
-            systemImage: "mountain.2.fill"
+            imageName: "images-5"
         ),
         QuizQuestion(
             id: "south-valley",
@@ -191,7 +191,7 @@ enum QuizQuestionBank {
             prompt: "Where is the Qoyllurit’i sanctuary located?",
             answers: ["Sinakara Valley", "Sacred Valley", "Colca Canyon", "Atacama Desert"],
             correctAnswer: "Sinakara Valley",
-            systemImage: "map.fill"
+            imageName: "images-5"
         ),
         QuizQuestion(
             id: "south-expression",
@@ -199,7 +199,7 @@ enum QuizQuestionBank {
             prompt: "Which expression plays a central role in the pilgrimage?",
             answers: ["Dance", "Sculpture", "Cinema", "Calligraphy"],
             correctAnswer: "Dance",
-            systemImage: "figure.dance"
+            imageName: "images-5"
         )
     ]
 }

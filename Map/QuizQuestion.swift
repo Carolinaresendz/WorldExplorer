@@ -4,5 +4,5 @@ struct QuizQuestion: Identifiable {
     let prompt: String
     let answers: [String]
     let correctAnswer: String
-    let systemImage: String
+    let imageName: String
 }

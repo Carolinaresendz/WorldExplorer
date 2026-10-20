@@ -12,10 +12,13 @@ struct QuizQuestionCard: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Image(systemName: question.systemImage)
-                .font(.system(.largeTitle, design: .rounded, weight: .medium))
-                .foregroundStyle(.tint)
-                .accessibilityHidden(true)
+            questionImage
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: 180)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .accessibilityLabel("Photo from \(question.location)")
 
             Text(question.prompt)
                 .font(.title2.bold())
@@ -37,6 +40,15 @@ struct QuizQuestionCard: View {
         .padding()
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var questionImage: Image {
+        if let dataAsset = NSDataAsset(name: question.imageName),
+           let image = UIImage(data: dataAsset.data) {
+            return Image(uiImage: image)
+        }
+
+        return Image(question.imageName)
     }
 }
 

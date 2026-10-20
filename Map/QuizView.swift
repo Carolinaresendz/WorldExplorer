@@ -65,6 +65,8 @@ struct QuizView: View {
                     selectedAnswer: selectedAnswer,
                     chooseAnswer: selectAnswer
                 )
+                .id(question.id)
+                .transition(.push(from: .trailing).combined(with: .opacity))
 
                 if let selectedAnswer {
                     QuizFeedbackView(
@@ -73,12 +75,22 @@ struct QuizView: View {
                         animationTrigger: feedbackAnimationTrigger
                     )
 
-                    Button(nextButtonTitle, action: advance)
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
+                    Label(swipePrompt, systemImage: "hand.draw.fill")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                        .symbolEffect(.wiggle.forward, value: feedbackAnimationTrigger)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
             .padding()
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded(handleSwipe)
+        )
+        .accessibilityAction(named: Text(swipePrompt)) {
+            guard selectedAnswer != nil else { return }
+            advance()
         }
     }
 
@@ -102,10 +114,10 @@ struct QuizView: View {
         )
     }
 
-    private var nextButtonTitle: String {
+    private var swipePrompt: String {
         currentQuestionIndex + 1 == questions.count
-            ? "See Results"
-            : "Next Question"
+            ? "Swipe left to see results"
+            : "Swipe left for the next question"
     }
 
     private func selectAnswer(_ answer: String) {
@@ -145,6 +157,18 @@ struct QuizView: View {
         currentQuestionIndex += 1
         selectedAnswer = nil
         shuffledAnswers = questions[currentQuestionIndex].answers.shuffled()
+    }
+
+    private func handleSwipe(_ value: DragGesture.Value) {
+        guard selectedAnswer != nil else { return }
+
+        let translation = value.translation
+        let isHorizontal = abs(translation.width) > abs(translation.height)
+        guard isHorizontal, translation.width < -80 else { return }
+
+        withAnimation(.snappy(duration: 0.4)) {
+            advance()
+        }
     }
 
     private func restart() {

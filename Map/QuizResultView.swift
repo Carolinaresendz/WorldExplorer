@@ -23,6 +23,10 @@ struct QuizResultView: View {
         } actions: {
             Button("Play Again", action: restart)
                 .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .controlSize(.large)
+                .font(.headline)
+                .frame(minWidth: 220, minHeight: 56)
         }
     }
 }
