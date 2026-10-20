@@ -18,8 +18,9 @@ struct Globe3DView: UIViewRepresentable {
         scnView.antialiasingMode = .multisampling4X
         scnView.isUserInteractionEnabled = true
         scnView.autoenablesDefaultLighting = false
-        scnView.rendersContinuously = true
-        scnView.isPlaying = true
+        scnView.rendersContinuously = false
+        scnView.isPlaying = false
+        scnView.preferredFramesPerSecond = 60
 
         let scene = SCNScene()
         scnView.scene = scene
@@ -36,20 +37,23 @@ struct Globe3DView: UIViewRepresentable {
         scnView.pointOfView = cameraNode
         context.coordinator.cameraNode = cameraNode
 
-        // Balanced lighting to highlight the continents and oceans
+        // A cool fill light preserves detail on the night side without flattening the globe.
         let ambientLightNode = SCNNode()
         let ambientLight = SCNLight()
         ambientLight.type = .ambient
-        ambientLight.intensity = 450
-        ambientLight.color = UIColor(white: 0.9, alpha: 1.0)
+        ambientLight.intensity = 180
+        ambientLight.color = UIColor(red: 0.44, green: 0.52, blue: 0.68, alpha: 1.0)
         ambientLightNode.light = ambientLight
         scene.rootNode.addChildNode(ambientLightNode)
 
         let dirLightNode = SCNNode()
         let dirLight = SCNLight()
         dirLight.type = .directional
-        dirLight.intensity = 600
-        dirLight.color = UIColor(white: 1.0, alpha: 1.0)
+        dirLight.intensity = 1_150
+        dirLight.color = UIColor(red: 1.0, green: 0.95, blue: 0.84, alpha: 1.0)
+        dirLight.castsShadow = true
+        dirLight.shadowRadius = 8
+        dirLight.shadowSampleCount = 16
         dirLightNode.light = dirLight
         dirLightNode.position = SCNVector3(2, 3, 5)
         dirLightNode.look(at: SCNVector3(0, 0, 0))
@@ -59,12 +63,17 @@ struct Globe3DView: UIViewRepresentable {
         let earthSphere = SCNSphere(radius: 1.0)
         earthSphere.segmentCount = 96
         let earthMaterial = SCNMaterial()
+        earthMaterial.lightingModel = .physicallyBased
+        earthMaterial.diffuse.contents = UIColor(red: 0.035, green: 0.12, blue: 0.24, alpha: 1.0)
         if let earthImage = UIImage(named: "EarthMap") ?? UIImage(named: "earth_map") {
             earthMaterial.diffuse.contents = earthImage
-        } else {
-            earthMaterial.diffuse.contents = UIColor(red: 0.1, green: 0.25, blue: 0.45, alpha: 1.0)
         }
-        earthMaterial.roughness.contents = 0.8
+        earthMaterial.metalness.contents = 0.0
+        earthMaterial.roughness.contents = 0.62
+        earthMaterial.specular.contents = UIColor(white: 0.42, alpha: 1.0)
+        earthMaterial.diffuse.mipFilter = .linear
+        earthMaterial.diffuse.magnificationFilter = .linear
+        earthMaterial.diffuse.minificationFilter = .linear
         earthSphere.materials = [earthMaterial]
 
         let earthNode = SCNNode(geometry: earthSphere)
@@ -75,9 +84,15 @@ struct Globe3DView: UIViewRepresentable {
         context.coordinator.earthNode = earthNode
 
         // Overlay Sphere for continent borders and highlight
-        let overlaySphere = SCNSphere(radius: 1.002)
+        let overlaySphere = SCNSphere(radius: 1.003)
         overlaySphere.segmentCount = 96
         let overlayMaterial = SCNMaterial()
+        // SceneKit defaults new materials to white. Start transparent so the
+        // overlay cannot hide the Earth while its generated texture is loading.
+        overlayMaterial.lightingModel = .constant
+        overlayMaterial.diffuse.contents = UIColor.clear
+        overlayMaterial.transparent.contents = UIColor.clear
+        overlayMaterial.blendMode = .alpha
         overlayMaterial.isDoubleSided = false
         overlayMaterial.writesToDepthBuffer = false
         overlayMaterial.readsFromDepthBuffer = true
@@ -88,13 +103,25 @@ struct Globe3DView: UIViewRepresentable {
         context.coordinator.overlayNode = overlayNode
         context.coordinator.overlayMaterial = overlayMaterial
 
-        // Atmosphere halo
-        let atmosphereSphere = SCNSphere(radius: 1.025)
-        atmosphereSphere.segmentCount = 48
+        // Fresnel shading concentrates the atmosphere at the planet's edge.
+        let atmosphereSphere = SCNSphere(radius: 1.022)
+        atmosphereSphere.segmentCount = 96
         let atmosphereMaterial = SCNMaterial()
-        atmosphereMaterial.diffuse.contents = UIColor(red: 0.35, green: 0.65, blue: 1.0, alpha: 0.14)
-        atmosphereMaterial.isDoubleSided = false
+        atmosphereMaterial.lightingModel = .constant
+        atmosphereMaterial.diffuse.contents = UIColor.clear
+        atmosphereMaterial.blendMode = .add
+        atmosphereMaterial.isDoubleSided = true
         atmosphereMaterial.writesToDepthBuffer = false
+        atmosphereMaterial.readsFromDepthBuffer = true
+        atmosphereMaterial.shaderModifiers = [
+            .surface: """
+            #pragma body
+            float rim = 1.0 - saturate(abs(dot(_surface.normal, _surface.view)));
+            rim = pow(rim, 4.8);
+            _surface.diffuse = float4(0.18, 0.48, 1.0, 1.0);
+            _surface.transparent = rim * 0.28;
+            """
+        ]
         atmosphereSphere.materials = [atmosphereMaterial]
         let atmosphereNode = SCNNode(geometry: atmosphereSphere)
         earthNode.addChildNode(atmosphereNode)
@@ -117,6 +144,10 @@ struct Globe3DView: UIViewRepresentable {
         context.coordinator.scnView = scnView
         context.coordinator.updateOverlayTexture()
 
+        // Prepare textures and shaders before the first visible frame.
+        _ = scnView.prepare(scene, shouldAbortBlock: nil)
+        scnView.setNeedsDisplay()
+
         return scnView
     }
 
@@ -137,8 +168,11 @@ struct Globe3DView: UIViewRepresentable {
         private var textureCache: [String: UIImage] = [:]
         private var displayLink: CADisplayLink?
         private var angularVelocity = CGPoint.zero
-        private var currentPitch: Float = 0.0 // Centrado en el ecuador
-        private let maxPitch: Float = 0.45 // Inclinación sutil
+        private var currentYaw: Float = -.pi / 2
+        private var currentPitch: Float = 0.0
+        // Keep the globe close to upright while allowing a small north/south tilt.
+        private let maxPitch: Float = 0.18
+        private var lastFrameTimestamp: CFTimeInterval?
 
         init(_ parent: Globe3DView) {
             self.parent = parent
@@ -161,20 +195,15 @@ struct Globe3DView: UIViewRepresentable {
 
             let translation = gesture.translation(in: gesture.view)
             let horizontalSensitivity: Float = 0.005
-            let verticalSensitivity: Float = 0.0015 // Giro vertical sutil pero perceptible
+            let verticalSensitivity: Float = 0.0008
 
             let deltaX = Float(translation.x) * horizontalSensitivity
-            let rawDeltaY = Float(translation.y) * verticalSensitivity
+            let deltaY = Float(translation.y) * verticalSensitivity
 
-            // Clamp the vertical tilt
-            let targetPitch = max(-maxPitch, min(maxPitch, currentPitch + rawDeltaY))
-            let deltaY = targetPitch - currentPitch
-            currentPitch = targetPitch
-
-            // Rotation: full horizontal turn and slight vertical movement
-            let rotY = simd_quatf(angle: deltaX, axis: simd_float3(0, 1, 0))
-            let rotX = simd_quatf(angle: deltaY, axis: simd_float3(1, 0, 0))
-            earthNode.simdOrientation = rotY * rotX * earthNode.simdOrientation
+            currentYaw += deltaX
+            currentPitch = max(-maxPitch, min(maxPitch, currentPitch + deltaY))
+            applyOrientation(to: earthNode)
+            scnView?.setNeedsDisplay()
 
             gesture.setTranslation(.zero, in: gesture.view)
 
@@ -185,7 +214,8 @@ struct Globe3DView: UIViewRepresentable {
         }
 
         private func startInertia(velocityX: Float, velocityY: Float) {
-            angularVelocity = CGPoint(x: CGFloat(velocityX * 0.00008), y: CGFloat(velocityY * 0.00001))
+            angularVelocity = CGPoint(x: CGFloat(velocityX * 0.0048), y: CGFloat(velocityY * 0.0002))
+            lastFrameTimestamp = nil
 
             if displayLink == nil {
                 let dl = CADisplayLink(target: self, selector: #selector(updateInertia))
@@ -198,6 +228,7 @@ struct Globe3DView: UIViewRepresentable {
             displayLink?.invalidate()
             displayLink = nil
             angularVelocity = .zero
+            lastFrameTimestamp = nil
         }
 
         @objc private func updateInertia() {
@@ -206,22 +237,30 @@ struct Globe3DView: UIViewRepresentable {
                 return
             }
 
-            let deltaPitch = Float(angularVelocity.y)
-            let targetPitch = max(-maxPitch, min(maxPitch, currentPitch + deltaPitch))
-            let actualDeltaY = targetPitch - currentPitch
-            currentPitch = targetPitch
+            guard let displayLink else { return }
+            let previousTimestamp = lastFrameTimestamp ?? displayLink.timestamp
+            let deltaTime = min(displayLink.timestamp - previousTimestamp, 1.0 / 20.0)
+            lastFrameTimestamp = displayLink.timestamp
 
-            let rotY = simd_quatf(angle: Float(angularVelocity.x), axis: simd_float3(0, 1, 0))
-            let rotX = simd_quatf(angle: actualDeltaY, axis: simd_float3(1, 0, 0))
-            earthNode.simdOrientation = rotY * rotX * earthNode.simdOrientation
+            currentYaw += Float(angularVelocity.x * deltaTime)
+            currentPitch = max(-maxPitch, min(maxPitch, currentPitch + Float(angularVelocity.y * deltaTime)))
+            applyOrientation(to: earthNode)
+            scnView?.setNeedsDisplay()
 
-            // Desaceleración suave
-            angularVelocity.x *= 0.94
-            angularVelocity.y *= 0.90
+            let horizontalDecay = pow(0.91, deltaTime * 60)
+            let verticalDecay = pow(0.90, deltaTime * 60)
+            angularVelocity.x *= horizontalDecay
+            angularVelocity.y *= verticalDecay
 
-            if abs(angularVelocity.x) < 0.0001 && abs(angularVelocity.y) < 0.0001 {
+            if abs(angularVelocity.x) < 0.006 && abs(angularVelocity.y) < 0.006 {
                 stopInertia()
             }
+        }
+
+        private func applyOrientation(to earthNode: SCNNode) {
+            let yaw = simd_quatf(angle: currentYaw, axis: simd_float3(0, 1, 0))
+            let pitch = simd_quatf(angle: currentPitch, axis: simd_float3(1, 0, 0))
+            earthNode.simdOrientation = yaw * pitch
         }
 
         @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
@@ -230,6 +269,7 @@ struct Globe3DView: UIViewRepresentable {
             let targetZ = cameraNode.position.z / scale
             cameraNode.position.z = max(8.0, min(20.0, targetZ))
             gesture.scale = 1.0
+            scnView?.setNeedsDisplay()
         }
 
         @objc func handleTap(_ gesture: UITapGestureRecognizer) {
@@ -268,17 +308,21 @@ struct Globe3DView: UIViewRepresentable {
 
             let cacheKey = currentSelection ?? "__none__"
             if let cached = textureCache[cacheKey] {
+                overlayMaterial?.transparent.contents = UIColor.white
                 overlayMaterial?.diffuse.contents = cached
+                scnView?.setNeedsDisplay()
                 return
             }
 
             let texture = renderOverlayImage(selectedContinent: currentSelection)
             textureCache[cacheKey] = texture
+            overlayMaterial?.transparent.contents = UIColor.white
             overlayMaterial?.diffuse.contents = texture
+            scnView?.setNeedsDisplay()
         }
 
         private func renderOverlayImage(selectedContinent: String?) -> UIImage {
-            let size = CGSize(width: 2048, height: 1024)
+            let size = CGSize(width: 1_024, height: 512)
             let renderer = UIGraphicsImageRenderer(size: size)
 
             return renderer.image { ctx in
