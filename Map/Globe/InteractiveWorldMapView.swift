@@ -53,15 +53,17 @@ struct InteractiveWorldMapView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+                .buttonBorderShape(.capsule)
                 .controlSize(.large)
 
                 NavigationLink {
                     QuizView(continent: continent)
                 } label: {
-                    Label("Quiz", systemImage: "questionmark.circle")
+                    Label("Quiz", systemImage: "questionmark.message")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
                 .controlSize(.large)
             }
         }

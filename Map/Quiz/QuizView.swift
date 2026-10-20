@@ -65,10 +65,16 @@ struct QuizView: View {
                     selectedAnswer: selectedAnswer,
                     chooseAnswer: selectAnswer
                 )
+                .frame(maxWidth: 560)
+                .padding(.horizontal, 12)
                 .id(question.id)
                 .transition(.push(from: .trailing).combined(with: .opacity))
-
-                if let selectedAnswer {
+            }
+            .padding()
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if let selectedAnswer {
+                VStack(spacing: 8) {
                     QuizFeedbackView(
                         isCorrect: selectedAnswer == question.correctAnswer,
                         correctAnswer: question.correctAnswer,
@@ -79,10 +85,13 @@ struct QuizView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                         .symbolEffect(.wiggle.forward, value: feedbackAnimationTrigger)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 6)
+                .background(.bar)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            .padding()
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 30)

@@ -89,22 +89,68 @@ struct FactCardView: View {
 
             Spacer()
 
-            Button(action: onToggleSave) {
-                Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(isSaved ? .orange : .primary)
-                    .frame(width: 38, height: 38)
-                    .background(.ultraThinMaterial, in: Circle())
-                    .overlay {
-                        Circle()
-                            .strokeBorder(.white.opacity(0.4), lineWidth: 0.6)
-                    }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(
-                isSaved ? "Remove bookmark" : "Bookmark fact"
+            SaveFactButton(
+                isSaved: isSaved,
+                presentation: .compact,
+                action: onToggleSave
             )
         }
         .padding(12)
+    }
+}
+
+struct SaveFactButton: View {
+    enum Presentation {
+        case compact
+        case labeled
+    }
+
+    let isSaved: Bool
+    let presentation: Presentation
+    let action: () -> Void
+
+    var body: some View {
+        Group {
+            switch presentation {
+            case .compact:
+                compactButton
+            case .labeled:
+                labeledButton
+            }
+        }
+        .accessibilityLabel(isSaved ? "Remove bookmark" : "Save fact")
+        .accessibilityValue(isSaved ? "Saved" : "Not saved")
+        .accessibilityAddTraits(isSaved ? .isSelected : [])
+        .sensoryFeedback(.selection, trigger: isSaved)
+    }
+
+    private var compactButton: some View {
+        Button(action: action) {
+            Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(isSaved ? .orange : .primary)
+                .frame(width: 44, height: 44)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay {
+                    Circle()
+                        .strokeBorder(.white.opacity(0.55), lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
+        .contentShape(.circle)
+    }
+
+    private var labeledButton: some View {
+        Button(action: action) {
+            Label(
+                isSaved ? "Saved" : "Save",
+                systemImage: isSaved ? "bookmark.fill" : "bookmark"
+            )
+            .fontWeight(.semibold)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        .tint(isSaved ? .orange : .primary)
     }
 }

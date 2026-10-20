@@ -13,6 +13,7 @@ struct FactDetailSheet: View {
                 factImage
                 factContent
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .ignoresSafeArea(edges: .top)
     }
@@ -28,6 +29,7 @@ struct FactDetailSheet: View {
                     .fill(Color.blue.opacity(0.2))
             }
         }
+        .frame(maxWidth: .infinity)
         .frame(height: 240)
         .clipped()
     }
@@ -54,41 +56,37 @@ struct FactDetailSheet: View {
                 .lineSpacing(6)
                 .foregroundStyle(.primary.opacity(0.9))
 
-            Button("Got It!") {
-                dismiss()
+            HStack {
+                Spacer(minLength: 0)
+
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Got It!")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .controlSize(.large)
+                .frame(maxWidth: 280)
+                .shadow(color: .accentColor.opacity(0.2), radius: 8, y: 4)
+
+                Spacer(minLength: 0)
             }
-            .font(.headline)
-            .foregroundStyle(.primary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(.thinMaterial, in: Capsule())
-            .overlay {
-                Capsule()
-                    .strokeBorder(.white.opacity(0.5), lineWidth: 1)
-            }
-            .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
             .padding(.top, 12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
     }
 
     private var bookmarkButton: some View {
-        Button(action: onToggleSave) {
-            Label(
-                isSaved ? "Saved" : "Save Fact",
-                systemImage: isSaved ? "bookmark.fill" : "bookmark"
-            )
-            .font(.caption.weight(.bold))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                isSaved
-                    ? Color.orange.opacity(0.15)
-                    : Color(.tertiarySystemFill),
-                in: Capsule()
-            )
-            .foregroundStyle(isSaved ? .orange : .primary)
-        }
+        SaveFactButton(
+            isSaved: isSaved,
+            presentation: .labeled,
+            action: onToggleSave
+        )
     }
 }

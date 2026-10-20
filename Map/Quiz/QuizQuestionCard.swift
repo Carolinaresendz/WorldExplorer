@@ -7,7 +7,7 @@ struct QuizQuestionCard: View {
     let chooseAnswer: (String) -> Void
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 14) {
             Label(question.location, systemImage: "mappin.and.ellipse")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -16,8 +16,9 @@ struct QuizQuestionCard: View {
                 .resizable()
                 .scaledToFill()
                 .frame(maxWidth: .infinity)
-                .frame(height: 180)
+                .frame(height: 150)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 12)
                 .accessibilityLabel("Photo from \(question.location)")
 
             Text(question.prompt)
@@ -25,7 +26,7 @@ struct QuizQuestionCard: View {
                 .multilineTextAlignment(.center)
                 .accessibilityAddTraits(.isHeader)
 
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 ForEach(answers, id: \.self) { answer in
                     QuizAnswerButton(
                         answer: answer,
@@ -38,6 +39,7 @@ struct QuizQuestionCard: View {
             }
         }
         .padding()
+        .padding(.vertical, 6)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }

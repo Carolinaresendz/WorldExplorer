@@ -125,26 +125,19 @@ struct FactsView: View {
                 showSavedOnly.toggle()
             }
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: showSavedOnly ? "bookmark.fill" : "bookmark")
-                Text("Saved (\(totalSavedFactCount))")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .foregroundStyle(showSavedOnly ? .orange : .primary)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 12)
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay {
-                Capsule()
-                    .strokeBorder(
-                        showSavedOnly
-                            ? Color.orange.opacity(0.6)
-                            : Color.white.opacity(0.45),
-                        lineWidth: 0.8
-                    )
-            }
+            Label(
+                "Saved (\(totalSavedFactCount))",
+                systemImage: showSavedOnly ? "bookmark.fill" : "bookmark"
+            )
+            .font(.subheadline.weight(.semibold))
         }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.capsule)
+        .tint(showSavedOnly ? .orange : .primary)
         .accessibilityLabel(showSavedOnly ? "Show all facts" : "Show saved facts")
+        .accessibilityValue(showSavedOnly ? "Showing saved facts" : "Showing all facts")
+        .accessibilityAddTraits(showSavedOnly ? .isSelected : [])
+        .sensoryFeedback(.selection, trigger: showSavedOnly)
     }
 
     private func toggleSave(for id: CultureFact.ID) {

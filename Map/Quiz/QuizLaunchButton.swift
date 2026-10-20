@@ -38,6 +38,7 @@ struct QuizLaunchButton: View {
             .shadow(color: .cyan.opacity(0.08), radius: 8, x: 0, y: 2)
         }
         .buttonStyle(.plain)
+        .contentShape(.capsule)
         .accessibilityLabel("Take \(regionName) quiz")
         .accessibilityHint("Opens the quiz with three lives")
     }
