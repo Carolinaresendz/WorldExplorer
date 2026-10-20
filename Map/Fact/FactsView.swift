@@ -16,10 +16,6 @@ struct FactsView: View {
         self.init(region: WorldRegion(continent: continent) ?? .asia)
     }
 
-    private var selectedCategory: FactCategory {
-        region.factsCategory
-    }
-
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 20) {
@@ -90,9 +86,7 @@ struct FactsView: View {
             }
         }
 
-        return CultureFactData.facts.filter {
-            $0.category == selectedCategory
-        }
+        return CultureFactData.facts(for: region)
     }
 
     private var totalSavedFactCount: Int {
@@ -125,15 +119,13 @@ struct FactsView: View {
                 showSavedOnly.toggle()
             }
         } label: {
-            Label(
-                "Saved (\(totalSavedFactCount))",
-                systemImage: showSavedOnly ? "bookmark.fill" : "bookmark"
-            )
-            .font(.subheadline.weight(.semibold))
+            HStack(spacing: 6) {
+                Image(systemName: showSavedOnly ? "bookmark.fill" : "bookmark")
+                Text("Saved")
+            }
+            .fixedSize(horizontal: true, vertical: false)
         }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.capsule)
-        .tint(showSavedOnly ? .orange : .primary)
+        .tint(showSavedOnly ? .orange : nil)
         .accessibilityLabel(showSavedOnly ? "Show all facts" : "Show saved facts")
         .accessibilityValue(showSavedOnly ? "Showing saved facts" : "Showing all facts")
         .accessibilityAddTraits(showSavedOnly ? .isSelected : [])

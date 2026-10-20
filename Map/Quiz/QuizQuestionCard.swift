@@ -21,6 +21,11 @@ struct QuizQuestionCard: View {
                 .padding(.horizontal, 12)
                 .accessibilityLabel("Photo from \(question.location)")
 
+            if let credit = FactPhotoCredit.credit(forImageNamed: question.imageName) {
+                PhotoCreditView(credit: credit)
+                    .padding(.horizontal, 12)
+            }
+
             Text(question.prompt)
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)

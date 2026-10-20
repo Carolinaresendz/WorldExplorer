@@ -56,6 +56,27 @@ struct FactDetailSheet: View {
                 .lineSpacing(6)
                 .foregroundStyle(.primary.opacity(0.9))
 
+            if let credit = FactPhotoCredit.credit(for: fact),
+               credit.license != "CC0" {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Photo: \(credit.author)")
+                        .foregroundStyle(.secondary)
+
+                    if let sourceURL = URL(string: credit.sourceURL),
+                       let licenseURL = URL(string: credit.licenseURL) {
+                        HStack {
+                            Link("Wikimedia Commons", destination: sourceURL)
+                            Text("·")
+                            Link(credit.license, destination: licenseURL)
+                        }
+                    }
+
+                    Text("Resized; cropped to fit.")
+                        .foregroundStyle(.secondary)
+                }
+                .font(.caption)
+            }
+
             HStack {
                 Spacer(minLength: 0)
 

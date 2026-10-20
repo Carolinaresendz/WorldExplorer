@@ -127,17 +127,12 @@ struct SaveFactButton: View {
     private var compactButton: some View {
         Button(action: action) {
             Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(isSaved ? .orange : .primary)
                 .frame(width: 44, height: 44)
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay {
-                    Circle()
-                        .strokeBorder(.white.opacity(0.55), lineWidth: 1)
-                }
         }
-        .buttonStyle(.plain)
-        .contentShape(.circle)
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
     }
 
     private var labeledButton: some View {

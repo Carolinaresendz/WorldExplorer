@@ -146,6 +146,7 @@ struct QuizView: View {
                 correctFeedbackTrigger += 1
             } else {
                 lives -= 1
+                totalScore = max(0, totalScore - 1)
                 incorrectFeedbackTrigger += 1
             }
         }
